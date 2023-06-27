@@ -1,25 +1,45 @@
 
 const express = require("express");
 const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
 const date = require(__dirname + "/date.js");
 const app = express();
 
-const items = ["sabah", "öğle", "akşam"];  // const(sabit) ile diziye yeni öğeler eklemek mümkün.
-const  workItems = [];
-
-
-
 app.set("view engine", "ejs");
-
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"))
+
+
+mongoose.connect('mongodb://127.0.0.1:27017/todolistDB');
+
+const itemsSchema = mongoose.Schema({ name : String})
+
+const ItemModel = mongoose.model("Item" , itemsSchema);
+
+const item1 = new ItemModel({
+    name : "Sabah"
+});
+const item2 = new ItemModel({
+    name : "Öğle"
+});
+const item3 = new ItemModel({
+    name : "Akşam"
+});
+
+const defaultItems = [item1 , item2 , item3];
+
+ItemModel.insertMany(defaultItems).then(function(){
+    console.log("Success");
+}).catch(function(err){
+    console.log(err);
+});
 
 
 
 app.get("/", function (req, res) {
 
     const day = date.getDate();
-    res.render("list", { listTitle: day, newListItems: items });
+    res.render("list", { listTitle: day, newListItems:  items});
 });
 
 app.post("/", function (req, res) {
@@ -37,7 +57,7 @@ app.post("/", function (req, res) {
 
 app.get("/work", function (req, res) {
 
-    res.render("list", { listTitle: "Work List", newListItems: workItems });
+    res.render("list", { listTitle: "Work List", newListItems:  });
 });
 
 app.post("/work", function (req, res) {
@@ -48,7 +68,7 @@ app.post("/work", function (req, res) {
 });
 
 app.get("/about", function (req, res) {
-    res.render("about"); // herhangi bir parametre almaz.
+    res.render("about"); 
 });
 
 
