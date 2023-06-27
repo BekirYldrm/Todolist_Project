@@ -26,12 +26,12 @@ const defaultItems = [item1, item2, item3];
 
 app.get("/", function (req, res) {
 
-    ItemModel.find().then( docs => {
-        if(docs.length ===0){
+    ItemModel.find().then(docs => {
+        if (docs.length === 0) {
 
-            ItemModel.insertMany(defaultItems).then(function(){
+            ItemModel.insertMany(defaultItems).then(function () {
                 console.log("Success");
-            }).catch( err=> {
+            }).catch(err => {
                 console.log(err);
             });
             res.redirect("/");
@@ -39,7 +39,7 @@ app.get("/", function (req, res) {
             const day = date.getDate();
             res.render("list", { listTitle: day, newListItems: docs });
         }
-    }).catch( err=> {
+    }).catch(err => {
         console.log(err);
     });
 
@@ -49,32 +49,44 @@ app.get("/", function (req, res) {
 app.post("/", function (req, res) {
 
     if (req.body.list === "Work List") {
-        const workItem = new workItemModel({name :req.body.newItem
+        const workItem = new workItemModel({
+            name: req.body.newItem
         });
         workItem.save();
         res.redirect("/work");
     } else {
-        const item4 = new ItemModel({name :req.body.newItem});
+        const item4 = new ItemModel({ name: req.body.newItem });
         item4.save();
         res.redirect("/");
     }
 });
 
+
 app.get("/work", function (req, res) {
 
     workItemModel.find().then(workDocs => {
-        res.render("list", { listTitle: "Work List", newListItems: workDocs});
-    }).catch(err=> {
+        res.render("list", { listTitle: "Work List", newListItems: workDocs });
+    }).catch(err => {
         console.log(err);
-    }) 
+    });
 });
+
+
+app.post("/delete", function (req, res) {
+
+   const itemId = req.body.checkbox ; 
+    ItemModel.findByIdAndRemove(itemId).then(function () {
+        res.redirect("/");
+    }).catch(err => {
+        console.log(err);
+    });
+});
+
 
 app.get("/about", function (req, res) {
-    res.render("about"); 
+    res.render("about");
 });
 
-
 app.listen(3000 || process.env.POST, function () {
-
     console.log("sunucu başlatıldı 3000 portunda.")
 });
