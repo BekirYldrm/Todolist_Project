@@ -4,24 +4,31 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const date = require(__dirname + "/date.js");
 const app = express();
+const _ = require("lodash"); 
 
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"))
 
+const day = date.getDate();
 
 mongoose.connect('mongodb://127.0.0.1:27017/todolistDB');
 
 const itemsSchema = mongoose.Schema({ name: String });
 
 const ItemModel = mongoose.model("Item", itemsSchema);
-const workItemModel = mongoose.model("WorkItem", itemsSchema);
 
 const item1 = new ItemModel({ name: "Sabah" });
 const item2 = new ItemModel({ name: "Öğle" });
 const item3 = new ItemModel({ name: "Akşam" });
-
 const defaultItems = [item1, item2, item3];
+
+
+const listSchema = mongoose.Schema({
+    name: String,
+    items: [itemsSchema]
+});
+const ListModel = mongoose.model("List", listSchema);
 
 
 app.get("/", function (req, res) {
@@ -36,7 +43,7 @@ app.get("/", function (req, res) {
             });
             res.redirect("/");
         } else {
-            const day = date.getDate();
+
             res.render("list", { listTitle: day, newListItems: docs });
         }
     }).catch(err => {
@@ -45,41 +52,68 @@ app.get("/", function (req, res) {
 
 });
 
+app.get("/:parameters", (req, res) => {
+    const listName = _.capitalize(req.params.parameters);
+
+    ListModel.findOne({ name: listName }).then(doc => {
+        if (doc) {
+            res.render("list", { listTitle: listName, newListItems: doc.items });
+        } else {
+            const listItem = new ListModel({
+                name: listName,
+                items: defaultItems
+            });
+            listItem.save();
+            res.redirect("/" + listName);
+
+        }
+    }).catch(err => {
+        console.log(err);
+    });
+});
+
+
 
 app.post("/", function (req, res) {
 
-    if (req.body.list === "Work List") {
-        const workItem = new workItemModel({
-            name: req.body.newItem
-        });
-        workItem.save();
-        res.redirect("/work");
-    } else {
-        const item4 = new ItemModel({ name: req.body.newItem });
-        item4.save();
+    const listName = req.body.list;
+    const item = new ItemModel({ name: req.body.newItem });
+
+    if (listName === day) {
+        item.save();
         res.redirect("/");
+    } else {
+        ListModel.findOne({ name: listName }).then(doc => {
+            doc.items.push(item);
+            doc.save();
+            res.redirect("/" + listName);
+        }).catch(err => {
+            console.log(err);
+        })
     }
+
 });
-
-
-app.get("/work", function (req, res) {
-
-    workItemModel.find().then(workDocs => {
-        res.render("list", { listTitle: "Work List", newListItems: workDocs });
-    }).catch(err => {
-        console.log(err);
-    });
-});
-
 
 app.post("/delete", function (req, res) {
 
-   const itemId = req.body.checkbox ; 
-    ItemModel.findByIdAndRemove(itemId).then(function () {
-        res.redirect("/");
-    }).catch(err => {
-        console.log(err);
-    });
+    const itemId = req.body.checkbox;
+    const listName = req.body.listName;
+
+    if (listName === day) {
+        ItemModel.findByIdAndRemove(itemId).then(function () {
+            res.redirect("/");
+        }).catch(err => {
+            console.log(err);
+        });
+    } else {
+        ListModel.findOneAndUpdate({ name: listName }, { $pull: { items: { _id: itemId } } }).then(doc => {
+            res.redirect("/" + listName);
+        }).catch(err => {
+            console.log(err);
+        });
+    }
+
+
 });
 
 
