@@ -12,7 +12,7 @@ app.use(express.static("public"))
 
 const day = date.getDate();
 
-mongoose.connect('mongodb://127.0.0.1:27017/todolistDB');
+mongoose.connect('mongodb+srv://bekir_yildirim:25.08.2001Bekir@cluster0.z4l3wpv.mongodb.net/todolistDB');
 
 const itemsSchema = mongoose.Schema({ name: String });
 
