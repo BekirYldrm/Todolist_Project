@@ -1,6 +1,4 @@
-
-
-exports.getDate = getDate ; // getDate fonksiyonunu dışa aktarıyoruz ama fonksiyonu çağırmadık ,() bunu eklemedik.
+exports.getDate = getDate ; // getDate fonksiyonunu dışa aktarıyoruz ama fonksiyonu çağırmadık ,()  eklemedik.
 
 function getDate () {
 

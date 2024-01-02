@@ -3,6 +3,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const date = require(__dirname + "/date.js");
+const data = require(__dirname + "/data.js");
 const app = express();
 const _ = require("lodash"); 
 
@@ -12,7 +13,7 @@ app.use(express.static("public"))
 
 const day = date.getDate();
 
-mongoose.connect('mongodb+srv://bekir_yildirim:25.08.2001Bekir@cluster0.z4l3wpv.mongodb.net/todolistDB');
+mongoose.connect(data.url+'/todolistDB');
 
 const itemsSchema = mongoose.Schema({ name: String });
 
